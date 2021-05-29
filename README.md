@@ -22,6 +22,7 @@
 git clone https://github.com/zlgopen/awtk-stm32h743iitx-freertos.git
 cd awtk-stm32h743iitx-freertos
 git clone https://github.com/zlgopen/awtk.git
+git clone https://github.com/zlgopen/awtk-sqlite3.git
 git clone https://github.com/zlgopen/awtk-fs-adapter.git
 ```
 
