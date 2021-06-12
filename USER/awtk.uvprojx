@@ -777,22 +777,22 @@
           <Files>
             <File>
               <FileName>math.cpp</FileName>
-              <FileType>1</FileType>
+              <FileType>8</FileType>
               <FilePath>..\awtk\3rd\agge\agge\math.cpp</FilePath>
             </File>
             <File>
               <FileName>stroke.cpp</FileName>
-              <FileType>1</FileType>
+              <FileType>8</FileType>
               <FilePath>..\awtk\3rd\agge\agge\stroke.cpp</FilePath>
             </File>
             <File>
               <FileName>stroke_features.cpp</FileName>
-              <FileType>1</FileType>
+              <FileType>8</FileType>
               <FilePath>..\awtk\3rd\agge\agge\stroke_features.cpp</FilePath>
             </File>
             <File>
               <FileName>vector_rasterizer.cpp</FileName>
-              <FileType>1</FileType>
+              <FileType>8</FileType>
               <FilePath>..\awtk\3rd\agge\agge\vector_rasterizer.cpp</FilePath>
             </File>
             <File>
@@ -837,12 +837,12 @@
             </File>
             <File>
               <FileName>nanovg_agge.cpp</FileName>
-              <FileType>1</FileType>
+              <FileType>8</FileType>
               <FilePath>..\awtk\3rd\nanovg\agge\nanovg_agge.cpp</FilePath>
             </File>
             <File>
               <FileName>nanovg_vertex.cpp</FileName>
-              <FileType>1</FileType>
+              <FileType>8</FileType>
               <FilePath>..\awtk\3rd\nanovg\agge\nanovg_vertex.cpp</FilePath>
             </File>
             <File>
@@ -914,6 +914,11 @@
               <FileName>dialog_highlighter_factory.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\awtk\src\base\dialog_highlighter_factory.c</FilePath>
+            </File>
+            <File>
+              <FileName>data_reader_asset.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk\src\base\data_reader_asset.c</FilePath>
             </File>
             <File>
               <FileName>enums.c</FileName>
@@ -1596,6 +1601,11 @@
               <FilePath>..\awtk\src\ext_widgets\switch\switch.c</FilePath>
             </File>
             <File>
+              <FileName>vpage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk\src\ext_widgets\vpage\vpage.c</FilePath>
+            </File>
+            <File>
               <FileName>text_selector.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\awtk\src\ext_widgets\text_selector\text_selector.c</FilePath>
@@ -1701,14 +1711,14 @@
               <FilePath>..\awtk\src\main_loop\main_loop_simple.c</FilePath>
             </File>
             <File>
+              <FileName>new.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\awtk\src\misc\new.cpp</FilePath>
+            </File>
+            <File>
               <FileName>native_window_raw.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\awtk\src\native_window\native_window_raw.c</FilePath>
-            </File>
-            <File>
-              <FileName>cond_var_null.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\awtk\src\platforms\raw\cond_var_null.c</FilePath>
             </File>
             <File>
               <FileName>bsvg.c</FileName>
@@ -1801,6 +1811,11 @@
               <FilePath>..\awtk\src\tkc\data_reader_file.c</FilePath>
             </File>
             <File>
+              <FileName>data_reader_mem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk\src\tkc\data_reader_mem.c</FilePath>
+            </File>
+            <File>
               <FileName>data_writer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\awtk\src\tkc\data_writer.c</FilePath>
@@ -1814,6 +1829,11 @@
               <FileName>data_writer_file.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\awtk\src\tkc\data_writer_file.c</FilePath>
+            </File>
+            <File>
+              <FileName>data_writer_wbuffer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk\src\tkc\data_writer_wbuffer.c</FilePath>
             </File>
             <File>
               <FileName>date_time.c</FileName>
