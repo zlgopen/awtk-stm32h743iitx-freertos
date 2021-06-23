@@ -24,8 +24,9 @@
 #include "base/timer.h"
 #include "tkc/platform.h"
 
+#define RESERVE_FOR_FRAME_BUFER 8 * 1024 * 600
 #define MEM2_MAX_SIZE 16 * 1024 * 1024
-#define MEM2_ADDR (uint8_t*)0XC0000000 + 2 * 1024 * 1024
+#define MEM2_ADDR (uint8_t*)0XC0000000 + RESERVE_FOR_FRAME_BUFER
 
 ret_t platform_prepare(void) {
   static bool_t inited = FALSE;

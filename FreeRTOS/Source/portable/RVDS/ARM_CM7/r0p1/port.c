@@ -741,6 +741,8 @@ __asm uint32_t vPortGetIPSR( void )
         uint32_t ulCurrentInterrupt;
         uint8_t ucCurrentPriority;
 
+        /*FIXME: I dont know why this failed for lcd VBI, just return now. -- Jim*/
+        return;
         /* Obtain the number of the currently executing interrupt. */
         ulCurrentInterrupt = vPortGetIPSR();
 
