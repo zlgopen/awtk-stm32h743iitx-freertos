@@ -394,8 +394,11 @@ void LTDC_Init(void)
 		lcdltdc.hbp=140;			    //水平后廊
 		lcdltdc.vbp=20;				    //垂直后廊
 		lcdltdc.hfp=160;			    //水平前廊
-		lcdltdc.vfp=12;				    //垂直前廊
-		LTDC_Clk_Set(5,160,18);			//设置像素时钟  45Mhz 
+		//lcdltdc.vfp=12;				    //垂直前廊
+		//LTDC_Clk_Set(5,160,18);			//设置像素时钟  45Mhz 
+		lcdltdc.vfp=160; 			    //垂直前廊
+		LTDC_Clk_Set(5,160,16);		//设置像素时钟  50Mhz 
+		
 		//其他参数待定.
 	}else if(lcdid==0X7018)		
 	{

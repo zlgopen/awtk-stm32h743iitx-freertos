@@ -28,7 +28,7 @@ void HAL_LTDC_LineEvenCallback(LTDC_HandleTypeDef *LTDC_Handler) {
     if (xHigherPriorityTaskWoken != pdFALSE) {
     }
   }
-  HAL_LTDC_ProgramLineEvent(LTDC_Handler, 0);
+  HAL_LTDC_ProgramLineEvent(LTDC_Handler, lcdltdc.height - 1);
 }
 
 lcd_t *lcd_impl_create(wh_t w, wh_t h) {
@@ -51,7 +51,7 @@ lcd_t *lcd_impl_create(wh_t w, wh_t h) {
 
   HAL_NVIC_SetPriority(LTDC_IRQn, 1, 1);
   HAL_NVIC_EnableIRQ(LTDC_IRQn);
-  HAL_LTDC_ProgramLineEvent(&LTDC_Handler, 0);
+  HAL_LTDC_ProgramLineEvent(&LTDC_Handler, lcdltdc.height - 1);
   HAL_LTDC_SetAddress(&LTDC_Handler, (uint32_t)s_framebuffers[0], 0);
   __HAL_LTDC_RELOAD_CONFIG(&LTDC_Handler);
 
