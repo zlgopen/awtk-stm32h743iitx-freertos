@@ -24,9 +24,10 @@
 /**
  * @method uart_open
  * @param {const char*} name 串口名称，如"1"，"2"，"3"，"4"，"5"，"6"，"7"，"8"。
+ * @param {int} baudrate 波特率。
  * @return {int} 串口句柄。
 */
-int uart_open(const char *name);
+int uart_open(const char *name, int baudrate);
 
 /**
  * @method uart_read

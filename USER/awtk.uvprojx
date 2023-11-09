@@ -2383,6 +2383,36 @@
               <FileType>1</FileType>
               <FilePath>..\awtk\src\tkc\typed_array.c</FilePath>
             </File>
+            <File>
+              <FileName>iostream_serial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk\src\streams\serial\iostream_serial.c</FilePath>
+            </File>
+            <File>
+              <FileName>istream_serial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk\src\streams\serial\istream_serial.c</FilePath>
+            </File>
+            <File>
+              <FileName>ostream_serial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk\src\streams\serial\ostream_serial.c</FilePath>
+            </File>
+            <File>
+              <FileName>stream_factory.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk\src\streams\stream_factory.c</FilePath>
+            </File>
+            <File>
+              <FileName>url.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk\src\tkc\url.c</FilePath>
+            </File>
+            <File>
+              <FileName>serial_helper.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk\src\tkc\serial_helper.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2447,6 +2477,11 @@
               <FileName>rtos.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\awtk\src\platforms\freertos\rtos.c</FilePath>
+            </File>
+            <File>
+              <FileName>serial_helper.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\awtk-port\serial_helper.c</FilePath>
             </File>
           </Files>
         </Group>

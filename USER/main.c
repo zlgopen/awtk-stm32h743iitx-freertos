@@ -60,6 +60,23 @@ static ret_t awtk_start_ui_thread(void) {
   return tk_thread_start(ui_thread);
 }
 
+#include "streams/serial/iostream_serial.h"
+
+void serial_stream_test(void) {
+  int ret = 0;
+  char buff[256] = {0};
+  tk_iostream_t* io = tk_iostream_serial_create("1");
+  return_if_fail(io != NULL);
+
+  while(1) {
+    ret = tk_iostream_read(io, buff, sizeof(buff));
+    if(ret > 0) {
+      tk_iostream_write(io, buff, ret);
+    }
+  }
+  TK_OBJECT_UNREF(io);
+}
+
 int main(void)
 {
   Cache_Enable();                 
@@ -80,7 +97,8 @@ int main(void)
 	
   platform_prepare();
 
-	//rt_test("1");
+  // serial_stream_test();
+  // uart_test("1");
 	
   LCD_ShowString(30,130,200,16,16,"check sdcard");        
   while(SD_Init())

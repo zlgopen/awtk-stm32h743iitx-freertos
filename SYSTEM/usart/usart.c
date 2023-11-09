@@ -1,4 +1,4 @@
-﻿#include "sys.h"
+#include "sys.h"
 #include "stdio.h"
 #include "usart.h"
 
@@ -51,7 +51,7 @@ typedef struct _uart_device_t
 
 static uart_device_t s_uart_devices[MAX_UART_COUNT];
 
-int uart_open(const char *name)
+int uart_open(const char *name, int baudrate)
 {
   uart_device_t *dev = NULL;
   uint32_t index = name != NULL ? atoi(name) : 1;
@@ -80,7 +80,7 @@ int uart_open(const char *name)
   {
     return -1;
   }
-  dev->handler.Init.BaudRate = 115200;               // 波特率
+  dev->handler.Init.BaudRate = baudrate;               // 波特率
   dev->handler.Init.WordLength = UART_WORDLENGTH_8B; // 字长为8位数据格式
   dev->handler.Init.StopBits = UART_STOPBITS_1;      // 一个停止位
   dev->handler.Init.Parity = UART_PARITY_NONE;       // 无奇偶校验位
@@ -92,14 +92,15 @@ int uart_open(const char *name)
 
   dev->rx_ring_buff = ring_buffer_create(2048, 2048);
 
-  return index - 1;
+  return index;
 }
 
 int uart_close(int fd)
 {
+	int index = fd - 1;	
   uart_device_t *dev = NULL;
-  return_value_if_fail(fd < MAX_UART_COUNT && fd >= 0, -1);
-  dev = &s_uart_devices[fd];
+  return_value_if_fail(fd < MAX_UART_COUNT && index >= 0, -1);
+  dev = &s_uart_devices[index];
 
   HAL_UART_DeInit(&dev->handler);
   ring_buffer_destroy(dev->rx_ring_buff);
@@ -110,9 +111,10 @@ int uart_close(int fd)
 
 int uart_read(int fd, void *buffer, uint32_t size)
 {
+	int index = fd - 1;	
   uart_device_t *dev = NULL;
-  return_value_if_fail(fd < MAX_UART_COUNT && fd >= 0, -1);
-  dev = &s_uart_devices[fd];
+  return_value_if_fail(fd < MAX_UART_COUNT && index >= 0, -1);
+  dev = &s_uart_devices[index];
   return_value_if_fail(dev->rx_ring_buff != NULL, -1);
 
   return ring_buffer_read(dev->rx_ring_buff, buffer, size);
@@ -130,9 +132,10 @@ static int uart_send_char(uart_device_t *dev, uint8_t ch)
 int uart_write(int fd, const void *buffer, uint32_t size)
 {
   uint32_t i = 0;
+	int index = fd - 1;		
   uart_device_t *dev = NULL;
-  return_value_if_fail(fd < MAX_UART_COUNT && fd >= 0, -1);
-  dev = &s_uart_devices[fd];
+  return_value_if_fail(fd < MAX_UART_COUNT && index >= 0, -1);
+  dev = &s_uart_devices[index];
   return_value_if_fail(dev->rx_ring_buff != NULL, -1);
 
   for (i = 0; i < size; i++)
@@ -226,12 +229,13 @@ void USART1_IRQHandler(void)
 void uart_test(const char* name)
 {
   int len = 0;
-  int fd = uart_open(name);
+  int fd = uart_open(name, 115200);
   uint8_t buff[128] = {0};
 
   if (fd >= 0)
   {
-    while (1)
+		int count = 10000;
+    while (count-- > 0)
     {
       len = uart_read(fd, buff, sizeof(buff));
       if (len > 0)
