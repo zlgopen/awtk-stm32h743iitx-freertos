@@ -67,8 +67,7 @@ int main(void)
   HAL_Init();                   
   Stm32_Clock_Init(160,5,2,4); 
   delay_init(400);            
-  uart_init(115200);            
-  usmart_dev.init(200);     
+
   LED_Init();               
   KEY_Init();               
   SDRAM_Init();      
@@ -78,9 +77,11 @@ int main(void)
   sys_tick_init(400);
   
   tp_dev.init();
-  
+	
   platform_prepare();
-    
+
+	//rt_test("1");
+	
   LCD_ShowString(30,130,200,16,16,"check sdcard");        
   while(SD_Init())
   {
@@ -101,7 +102,7 @@ int main(void)
   rtos_init();
   awtk_start_ui_thread();
   rtos_start();
-  
+
   return 0;
 }
 

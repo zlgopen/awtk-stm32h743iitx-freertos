@@ -1,31 +1,62 @@
-#ifndef _USART_H
+ï»¿#ifndef _USART_H
 #define _USART_H
-#include "sys.h"
-#include "stdio.h"	
+
+#include "tkc/ring_buffer.h"
+
 //////////////////////////////////////////////////////////////////////////////////	 
-//±¾³ÌĞòÖ»¹©Ñ§Ï°Ê¹ÓÃ£¬Î´¾­×÷ÕßĞí¿É£¬²»µÃÓÃÓÚÆäËüÈÎºÎÓÃÍ¾
-//ALIENTEK STM32H7¿ª·¢°å
-//´®¿Ú1³õÊ¼»¯		   
-//ÕıµãÔ­×Ó@ALIENTEK
-//¼¼ÊõÂÛÌ³:www.openedv.csom
-//ĞŞ¸ÄÈÕÆÚ:2017/6/8
-//°æ±¾£ºV1.0
-//°æÈ¨ËùÓĞ£¬µÁ°æ±Ø¾¿¡£
-//Copyright(C) ÕıµãÔ­×Ó 2009-2019
+//æœ¬ç¨‹åºåªä¾›å­¦ä¹ ä½¿ç”¨ï¼Œæœªç»ä½œè€…è®¸å¯ï¼Œä¸å¾—ç”¨äºå…¶å®ƒä»»ä½•ç”¨é€”
+//ALIENTEK STM32H7å¼€å‘æ¿
+//ä¸²å£1åˆå§‹åŒ–		   
+//æ­£ç‚¹åŸå­@ALIENTEK
+//æŠ€æœ¯è®ºå›:www.openedv.csom
+//ä¿®æ”¹æ—¥æœŸ:2017/6/8
+//ç‰ˆæœ¬ï¼šV1.0
+//ç‰ˆæƒæ‰€æœ‰ï¼Œç›—ç‰ˆå¿…ç©¶ã€‚
+//Copyright(C) æ­£ç‚¹åŸå­ 2009-2019
 //All rights reserved
 //********************************************************************************
-//V1.0ĞŞ¸ÄËµÃ÷ 
+//V1.0ä¿®æ”¹è¯´æ˜ 
+// Li XianJing <xianjimli@hotmai.com> 2023-11-09 å°è£…æˆä¸²å£å‡½æ•°ã€‚
 ////////////////////////////////////////////////////////////////////////////////// 	
-#define USART_REC_LEN  			200  	//¶¨Òå×î´ó½ÓÊÕ×Ö½ÚÊı 200
-#define EN_USART1_RX 			1		//Ê¹ÄÜ£¨1£©/½ûÖ¹£¨0£©´®¿Ú1½ÓÊÕ
-	  	
-extern u8  USART_RX_BUF[USART_REC_LEN]; //½ÓÊÕ»º³å,×î´óUSART_REC_LEN¸ö×Ö½Ú.Ä©×Ö½ÚÎª»»ĞĞ·û 
-extern u16 USART_RX_STA;         		//½ÓÊÕ×´Ì¬±ê¼Ç	
-extern UART_HandleTypeDef UART1_Handler; //UART¾ä±ú
 
-#define RXBUFFERSIZE   1 //»º´æ´óĞ¡
-extern u8 aRxBuffer[RXBUFFERSIZE];//HAL¿âUSART½ÓÊÕBuffer
+#define WITH_PRINTF 1
 
-//Èç¹ûÏë´®¿ÚÖĞ¶Ï½ÓÊÕ£¬Çë²»Òª×¢ÊÍÒÔÏÂºê¶¨Òå
-void uart_init(u32 bound);
+/**
+ * @method uart_open
+ * @param {const char*} name ä¸²å£åç§°ï¼Œå¦‚"1"ï¼Œ"2"ï¼Œ"3"ï¼Œ"4"ï¼Œ"5"ï¼Œ"6"ï¼Œ"7"ï¼Œ"8"ã€‚
+ * @return {int} ä¸²å£å¥æŸ„ã€‚
+*/
+int uart_open(const char *name);
+
+/**
+ * @method uart_read
+ * è¯»ä¸²å£ã€‚
+ * @param {int} fd ä¸²å£å¥æŸ„ã€‚
+ * @param {void*} buff è¯»å–ç¼“å†²åŒºã€‚
+ * @param {uint32_t} nbytes è¯»å–å­—èŠ‚æ•°ã€‚
+ * @return {int} å®é™…è¯»å–å­—èŠ‚æ•°ã€‚
+*/
+int uart_read(int fd, void *buff, uint32_t nbytes);
+
+/**
+ * @method uart_write
+ * å†™ä¸²å£ã€‚
+ * @param {int} fd ä¸²å£å¥æŸ„ã€‚
+ * @param {const void*} buff å†™å…¥ç¼“å†²åŒºã€‚
+ * @param {uint32_t} nbytes å†™å…¥å­—èŠ‚æ•°ã€‚
+ * @return {int} å®é™…å†™å…¥å­—èŠ‚æ•°ã€‚
+*/
+int uart_write(int fd, const void *buff, uint32_t nbytes);
+
+/**
+ * @method uart_close
+ * å…³é—­ä¸²å£ã€‚
+ * @param {int} fd ä¸²å£å¥æŸ„ã€‚
+ * @return {int} 0è¡¨ç¤ºæˆåŠŸï¼Œ-1è¡¨ç¤ºå¤±è´¥ã€‚
+*/
+int uart_close(int fd);
+
+/*for test*/
+void uart_test(const char* name);
+
 #endif

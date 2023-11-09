@@ -1,211 +1,245 @@
+ï»¿#include "sys.h"
+#include "stdio.h"
 #include "usart.h"
-////////////////////////////////////////////////////////////////////////////////// 	 
-//Èç¹ûÊ¹ÓÃos,Ôò°üÀ¨ÏÂÃæµÄÍ·ÎÄ¼ş¼´¿É.
-#if SYSTEM_SUPPORT_OS
-#include "includes.h"					//os Ê¹ÓÃ	  
-#endif
-//////////////////////////////////////////////////////////////////////////////////	 
-//±¾³ÌĞòÖ»¹©Ñ§Ï°Ê¹ÓÃ£¬Î´¾­×÷ÕßĞí¿É£¬²»µÃÓÃÓÚÆäËüÈÎºÎÓÃÍ¾
-//ALIENTEK STM32H7¿ª·¢°å
-//´®¿Ú1³õÊ¼»¯		   
-//ÕıµãÔ­×Ó@ALIENTEK
-//¼¼ÊõÂÛÌ³:www.openedv.com
-//ĞŞ¸ÄÈÕÆÚ:2017/6/8
-//°æ±¾£ºV1.0
-//°æÈ¨ËùÓĞ£¬µÁ°æ±Ø¾¿¡£
-//Copyright(C) ¹ãÖİÊĞĞÇÒíµç×Ó¿Æ¼¼ÓĞÏŞ¹«Ë¾ 2009-2019
-//All rights reserved
+
+//////////////////////////////////////////////////////////////////////////////////
+// æœ¬ç¨‹åºåªä¾›å­¦ä¹ ä½¿ç”¨ï¼Œæœªç»ä½œè€…è®¸å¯ï¼Œä¸å¾—ç”¨äºå…¶å®ƒä»»ä½•ç”¨é€”
+// ALIENTEK STM32H7å¼€å‘æ¿
+// ä¸²å£1åˆå§‹åŒ–
+// æ­£ç‚¹åŸå­@ALIENTEK
+// æŠ€æœ¯è®ºå›:www.openedv.com
+// ä¿®æ”¹æ—¥æœŸ:2017/6/8
+// ç‰ˆæœ¬ï¼šV1.0
+// ç‰ˆæƒæ‰€æœ‰ï¼Œç›—ç‰ˆå¿…ç©¶ã€‚
+// Copyright(C) å¹¿å·å¸‚æ˜Ÿç¿¼ç”µå­ç§‘æŠ€æœ‰é™å…¬å¸ 2009-2019
+// All rights reserved
 //********************************************************************************
-//V1.0ĞŞ¸ÄËµÃ÷ 
-////////////////////////////////////////////////////////////////////////////////// 	  
-//¼ÓÈëÒÔÏÂ´úÂë,Ö§³Öprintfº¯Êı,¶ø²»ĞèÒªÑ¡Ôñuse MicroLIB	  
-//#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)	
-#if 1
-//#pragma import(__use_no_semihosting)             
-//±ê×¼¿âĞèÒªµÄÖ§³Öº¯Êı                 
-struct __FILE 
-{ 
-	int handle; 
-}; 
+// V1.0ä¿®æ”¹è¯´æ˜
+// Li XianJing <xianjimli@hotmai.com> 2023-11-09 å°è£…æˆä¸²å£å‡½æ•°ã€‚
+//////////////////////////////////////////////////////////////////////////////////
 
-FILE __stdout;       
-//¶¨Òå_sys_exit()ÒÔ±ÜÃâÊ¹ÓÃ°ëÖ÷»úÄ£Ê½    
-void _sys_exit(int x) 
-{ 
-	x = x; 
-} 
-//ÖØ¶¨Òåfputcº¯Êı 
+#define RXBUFFERSIZE 1
+#define MAX_UART_COUNT 3
+
+#if defined(WITH_PRINTF)
+// #pragma import(__use_no_semihosting)
+// æ ‡å‡†åº“éœ€è¦çš„æ”¯æŒå‡½æ•°
+struct __FILE
+{
+  int handle;
+};
+
+FILE __stdout;
+// å®šä¹‰_sys_exit()ä»¥é¿å…ä½¿ç”¨åŠä¸»æœºæ¨¡å¼
+void _sys_exit(int x)
+{
+  x = x;
+}
+// é‡å®šä¹‰fputcå‡½æ•°
 int fputc(int ch, FILE *f)
-{ 	
-	while((USART1->ISR&0X40)==0);//Ñ­»··¢ËÍ,Ö±µ½·¢ËÍÍê±Ï   
-	USART1->TDR=(u8)ch;      
-	return ch;
+{
+  return ch;
 }
-#endif 
+#endif /*WITH_PRINTF*/
 
-#if EN_USART1_RX   //Èç¹ûÊ¹ÄÜÁË½ÓÊÕ
-//´®¿Ú1ÖĞ¶Ï·şÎñ³ÌĞò
-//×¢Òâ,¶ÁÈ¡USARTx->SRÄÜ±ÜÃâÄªÃûÆäÃîµÄ´íÎó   	
-u8 USART_RX_BUF[USART_REC_LEN];     //½ÓÊÕ»º³å,×î´óUSART_REC_LEN¸ö×Ö½Ú.
-//½ÓÊÕ×´Ì¬
-//bit15£¬	½ÓÊÕÍê³É±êÖ¾
-//bit14£¬	½ÓÊÕµ½0x0d
-//bit13~0£¬	½ÓÊÕµ½µÄÓĞĞ§×Ö½ÚÊıÄ¿
-u16 USART_RX_STA=0;       //½ÓÊÕ×´Ì¬±ê¼Ç	
+typedef struct _uart_device_t
+{
+  UART_HandleTypeDef handler;
+  uint8_t rx_buff[RXBUFFERSIZE];
+  ring_buffer_t *rx_ring_buff;
+} uart_device_t;
 
-u8 aRxBuffer[RXBUFFERSIZE];//HAL¿âÊ¹ÓÃµÄ´®¿Ú½ÓÊÕ»º³å
-UART_HandleTypeDef UART1_Handler; //UART¾ä±ú
+static uart_device_t s_uart_devices[MAX_UART_COUNT];
 
-//³õÊ¼»¯IO ´®¿Ú1 
-//bound:²¨ÌØÂÊ
-void uart_init(u32 bound)
-{	
-	//UART ³õÊ¼»¯ÉèÖÃ
-	UART1_Handler.Instance=USART1;					    //USART1
-	UART1_Handler.Init.BaudRate=bound;				    //²¨ÌØÂÊ
-	UART1_Handler.Init.WordLength=UART_WORDLENGTH_8B;   //×Ö³¤Îª8Î»Êı¾İ¸ñÊ½
-	UART1_Handler.Init.StopBits=UART_STOPBITS_1;	    //Ò»¸öÍ£Ö¹Î»
-	UART1_Handler.Init.Parity=UART_PARITY_NONE;		    //ÎŞÆæÅ¼Ğ£ÑéÎ»
-	UART1_Handler.Init.HwFlowCtl=UART_HWCONTROL_NONE;   //ÎŞÓ²¼şÁ÷¿Ø
-	UART1_Handler.Init.Mode=UART_MODE_TX_RX;		    //ÊÕ·¢Ä£Ê½
-	HAL_UART_Init(&UART1_Handler);					    //HAL_UART_Init()»áÊ¹ÄÜUART1
-	
-	HAL_UART_Receive_IT(&UART1_Handler, (u8 *)aRxBuffer, RXBUFFERSIZE);//¸Ãº¯Êı»á¿ªÆô½ÓÊÕÖĞ¶Ï£º±êÖ¾Î»UART_IT_RXNE£¬²¢ÇÒÉèÖÃ½ÓÊÕ»º³åÒÔ¼°½ÓÊÕ»º³å½ÓÊÕ×î´óÊı¾İÁ¿
-  
+int uart_open(const char *name)
+{
+  uart_device_t *dev = NULL;
+  uint32_t index = name != NULL ? atoi(name) : 1;
+  return_value_if_fail(index < MAX_UART_COUNT && index > 0, -1);
+  dev = &s_uart_devices[index - 1];
+
+  if (dev->rx_ring_buff != NULL)
+  {
+    return index - 1;
+  }
+
+  // UART åˆå§‹åŒ–è®¾ç½®
+  if (index == 1)
+  {
+    dev->handler.Instance = USART1;
+  }
+  else if (index == 2)
+  {
+    dev->handler.Instance = USART2;
+  }
+  else if (index == 3)
+  {
+    dev->handler.Instance = USART3;
+  }
+  else
+  {
+    return -1;
+  }
+  dev->handler.Init.BaudRate = 115200;               // æ³¢ç‰¹ç‡
+  dev->handler.Init.WordLength = UART_WORDLENGTH_8B; // å­—é•¿ä¸º8ä½æ•°æ®æ ¼å¼
+  dev->handler.Init.StopBits = UART_STOPBITS_1;      // ä¸€ä¸ªåœæ­¢ä½
+  dev->handler.Init.Parity = UART_PARITY_NONE;       // æ— å¥‡å¶æ ¡éªŒä½
+  dev->handler.Init.HwFlowCtl = UART_HWCONTROL_NONE; // æ— ç¡¬ä»¶æµæ§
+  dev->handler.Init.Mode = UART_MODE_TX_RX;          // æ”¶å‘æ¨¡å¼
+  HAL_UART_Init(&dev->handler);                      // HAL_UART_Init()ä¼šä½¿èƒ½UART1
+
+  HAL_UART_Receive_IT(&(dev->handler), (u8 *)(dev->rx_buff), sizeof(dev->rx_buff)); // è¯¥å‡½æ•°ä¼šå¼€å¯æ¥æ”¶ä¸­æ–­ï¼šæ ‡å¿—ä½UART_IT_RXNEï¼Œå¹¶ä¸”è®¾ç½®æ¥æ”¶ç¼“å†²ä»¥åŠæ¥æ”¶ç¼“å†²æ¥æ”¶æœ€å¤§æ•°æ®é‡
+
+  dev->rx_ring_buff = ring_buffer_create(2048, 2048);
+
+  return index - 1;
 }
 
-//UARTµ×²ã³õÊ¼»¯£¬Ê±ÖÓÊ¹ÄÜ£¬Òı½ÅÅäÖÃ£¬ÖĞ¶ÏÅäÖÃ
-//´Ëº¯Êı»á±»HAL_UART_Init()µ÷ÓÃ
-//huart:´®¿Ú¾ä±ú
+int uart_close(int fd)
+{
+  uart_device_t *dev = NULL;
+  return_value_if_fail(fd < MAX_UART_COUNT && fd >= 0, -1);
+  dev = &s_uart_devices[fd];
+
+  HAL_UART_DeInit(&dev->handler);
+  ring_buffer_destroy(dev->rx_ring_buff);
+  dev->rx_ring_buff = NULL;
+
+  return 0;
+}
+
+int uart_read(int fd, void *buffer, uint32_t size)
+{
+  uart_device_t *dev = NULL;
+  return_value_if_fail(fd < MAX_UART_COUNT && fd >= 0, -1);
+  dev = &s_uart_devices[fd];
+  return_value_if_fail(dev->rx_ring_buff != NULL, -1);
+
+  return ring_buffer_read(dev->rx_ring_buff, buffer, size);
+}
+
+static int uart_send_char(uart_device_t *dev, uint8_t ch)
+{
+  while ((dev->handler.Instance->ISR & 0X40) == 0)
+    ;
+  dev->handler.Instance->TDR = (u8)ch;
+
+  return 1;
+}
+
+int uart_write(int fd, const void *buffer, uint32_t size)
+{
+  uint32_t i = 0;
+  uart_device_t *dev = NULL;
+  return_value_if_fail(fd < MAX_UART_COUNT && fd >= 0, -1);
+  dev = &s_uart_devices[fd];
+  return_value_if_fail(dev->rx_ring_buff != NULL, -1);
+
+  for (i = 0; i < size; i++)
+  {
+    uart_send_char(dev, ((uint8_t *)buffer)[i]);
+  }
+
+  return size;
+}
 
 void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 {
-    //GPIO¶Ë¿ÚÉèÖÃ
-	GPIO_InitTypeDef GPIO_Initure;
-	
-	if(huart->Instance==USART1)//Èç¹ûÊÇ´®¿Ú1£¬½øĞĞ´®¿Ú1 MSP³õÊ¼»¯
-	{
-		__HAL_RCC_GPIOA_CLK_ENABLE();			//Ê¹ÄÜGPIOAÊ±ÖÓ
-		__HAL_RCC_USART1_CLK_ENABLE();			//Ê¹ÄÜUSART1Ê±ÖÓ
-	
-		GPIO_Initure.Pin=GPIO_PIN_9;			//PA9
-		GPIO_Initure.Mode=GPIO_MODE_AF_PP;		//¸´ÓÃÍÆÍìÊä³ö
-		GPIO_Initure.Pull=GPIO_PULLUP;			//ÉÏÀ­
-		GPIO_Initure.Speed=GPIO_SPEED_FREQ_HIGH;//¸ßËÙ
-		GPIO_Initure.Alternate=GPIO_AF7_USART1;	//¸´ÓÃÎªUSART1
-		HAL_GPIO_Init(GPIOA,&GPIO_Initure);	   	//³õÊ¼»¯PA9
+  // GPIOç«¯å£è®¾ç½®
+  GPIO_InitTypeDef GPIO_Initure;
 
-		GPIO_Initure.Pin=GPIO_PIN_10;			//PA10
-		HAL_GPIO_Init(GPIOA,&GPIO_Initure);	   	//³õÊ¼»¯PA10
-		
-#if EN_USART1_RX
-		HAL_NVIC_EnableIRQ(USART1_IRQn);				//Ê¹ÄÜUSART1ÖĞ¶ÏÍ¨µÀ
-		HAL_NVIC_SetPriority(USART1_IRQn,3,3);			//ÇÀÕ¼ÓÅÏÈ¼¶3£¬×ÓÓÅÏÈ¼¶3
-#endif	
-	}
+  if (huart->Instance == USART1) // å¦‚æœæ˜¯ä¸²å£1ï¼Œè¿›è¡Œä¸²å£1 MSPåˆå§‹åŒ–
+  {
+    __HAL_RCC_GPIOA_CLK_ENABLE();  // ä½¿èƒ½GPIOAæ—¶é’Ÿ
+    __HAL_RCC_USART1_CLK_ENABLE(); // ä½¿èƒ½USART1æ—¶é’Ÿ
 
+    GPIO_Initure.Pin = GPIO_PIN_9;             // PA9
+    GPIO_Initure.Mode = GPIO_MODE_AF_PP;       // å¤ç”¨æ¨æŒ½è¾“å‡º
+    GPIO_Initure.Pull = GPIO_PULLUP;           // ä¸Šæ‹‰
+    GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH; // é«˜é€Ÿ
+    GPIO_Initure.Alternate = GPIO_AF7_USART1;  // å¤ç”¨ä¸ºUSART1
+    HAL_GPIO_Init(GPIOA, &GPIO_Initure);       // åˆå§‹åŒ–PA9
+
+    GPIO_Initure.Pin = GPIO_PIN_10;      // PA10
+    HAL_GPIO_Init(GPIOA, &GPIO_Initure); // åˆå§‹åŒ–PA10
+
+    HAL_NVIC_EnableIRQ(USART1_IRQn);         // ä½¿èƒ½USART1ä¸­æ–­é€šé“
+    HAL_NVIC_SetPriority(USART1_IRQn, 3, 3); // æŠ¢å ä¼˜å…ˆçº§3ï¼Œå­ä¼˜å…ˆçº§3
+  }
+
+  /*TODO: init other uarts*/
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if(huart->Instance==USART1)//Èç¹ûÊÇ´®¿Ú1
-	{
-		if((USART_RX_STA&0x8000)==0)//½ÓÊÕÎ´Íê³É
-		{
-			if(USART_RX_STA&0x4000)//½ÓÊÕµ½ÁË0x0d
-			{
-				if(aRxBuffer[0]!=0x0a)USART_RX_STA=0;//½ÓÊÕ´íÎó,ÖØĞÂ¿ªÊ¼
-				else USART_RX_STA|=0x8000;	//½ÓÊÕÍê³ÉÁË 
-			}
-			else //»¹Ã»ÊÕµ½0X0D
-			{	
-				if(aRxBuffer[0]==0x0d)USART_RX_STA|=0x4000;
-				else
-				{
-					USART_RX_BUF[USART_RX_STA&0X3FFF]=aRxBuffer[0] ;
-					USART_RX_STA++;
-					if(USART_RX_STA>(USART_REC_LEN-1))USART_RX_STA=0;//½ÓÊÕÊı¾İ´íÎó,ÖØĞÂ¿ªÊ¼½ÓÊÕ	  
-				}		 
-			}
-		}
+  uart_device_t *dev = NULL;
+  if (huart->Instance == USART1)
+  {
+    dev = &s_uart_devices[0];
+  }
+  else if (huart->Instance == USART2)
+  {
+    dev = &s_uart_devices[1];
+  }
+  else if (huart->Instance == USART3)
+  {
+    dev = &s_uart_devices[2];
+  }
+  else
+  {
+    return;
+  }
 
-	}
+  ring_buffer_write(dev->rx_ring_buff, dev->rx_buff, sizeof(dev->rx_buff));
 }
- 
-//´®¿Ú1ÖĞ¶Ï·şÎñ³ÌĞò
-void USART1_IRQHandler(void)                	
-{ 
-	u32 timeout=0;
-    u32 maxDelay=0x1FFFF;
-#if SYSTEM_SUPPORT_OS	 	//Ê¹ÓÃOS
-	OSIntEnter();    
-#endif
-	
-	HAL_UART_IRQHandler(&UART1_Handler);	//µ÷ÓÃHAL¿âÖĞ¶Ï´¦Àí¹«ÓÃº¯Êı
-	
-	timeout=0;
-    while (HAL_UART_GetState(&UART1_Handler)!=HAL_UART_STATE_READY)//µÈ´ı¾ÍĞ÷
-	{
-        timeout++;////³¬Ê±´¦Àí
-        if(timeout>maxDelay) break;		
-	}
-     
-	timeout=0;
-	while(HAL_UART_Receive_IT(&UART1_Handler,(u8 *)aRxBuffer, RXBUFFERSIZE)!=HAL_OK)//Ò»´Î´¦ÀíÍê³ÉÖ®ºó£¬ÖØĞÂ¿ªÆôÖĞ¶Ï²¢ÉèÖÃRxXferCountÎª1
-	{
-        timeout++; //³¬Ê±´¦Àí
-        if(timeout>maxDelay) break;	
-	}
-#if SYSTEM_SUPPORT_OS	 	//Ê¹ÓÃOS
-	OSIntExit();  											 
-#endif
-} 
-#endif	
 
-/*ÏÂÃæ´úÂëÎÒÃÇÖ±½Ó°ÑÖĞ¶Ï¿ØÖÆÂß¼­Ğ´ÔÚÖĞ¶Ï·şÎñº¯ÊıÄÚ²¿¡£*/
-/*
+void USART_IRQHandler(uart_device_t *dev)
+{
+  u32 timeout = 0;
+  u32 maxDelay = 0x1FFFF;
+  UART_HandleTypeDef *handler = &dev->handler;
 
-//´®¿Ú1ÖĞ¶Ï·şÎñ³ÌĞò
-void USART1_IRQHandler(void)                	
-{ 
-	u8 Res;
-#if SYSTEM_SUPPORT_OS	 	//Ê¹ÓÃOS
-	OSIntEnter();    
-#endif
-	if((__HAL_UART_GET_FLAG(&UART1_Handler,UART_FLAG_RXNE)!=RESET))  //½ÓÊÕÖĞ¶Ï(½ÓÊÕµ½µÄÊı¾İ±ØĞëÊÇ0x0d 0x0a½áÎ²)
-	{
-        HAL_UART_Receive(&UART1_Handler,&Res,1,1000); 
-		if((USART_RX_STA&0x8000)==0)//½ÓÊÕÎ´Íê³É
-		{
-			if(USART_RX_STA&0x4000)//½ÓÊÕµ½ÁË0x0d
-			{
-				if(Res!=0x0a)USART_RX_STA=0;//½ÓÊÕ´íÎó,ÖØĞÂ¿ªÊ¼
-				else USART_RX_STA|=0x8000;	//½ÓÊÕÍê³ÉÁË 
-			}
-			else //»¹Ã»ÊÕµ½0X0D
-			{	
-				if(Res==0x0d)USART_RX_STA|=0x4000;
-				else
-				{
-					USART_RX_BUF[USART_RX_STA&0X3FFF]=Res ;
-					USART_RX_STA++;
-					if(USART_RX_STA>(USART_REC_LEN-1))USART_RX_STA=0;//½ÓÊÕÊı¾İ´íÎó,ÖØĞÂ¿ªÊ¼½ÓÊÕ	  
-				}		 
-			}
-		}   		 
-	}
-	HAL_UART_IRQHandler(&UART1_Handler);	
-#if SYSTEM_SUPPORT_OS	 	//Ê¹ÓÃOS
-	OSIntExit();  											 
-#endif
-} 
-#endif	
-*/
+  HAL_UART_IRQHandler(handler); // è°ƒç”¨HALåº“ä¸­æ–­å¤„ç†å…¬ç”¨å‡½æ•°
 
- 
+  timeout = 0;
+  while (HAL_UART_GetState(handler) != HAL_UART_STATE_READY) // ç­‰å¾…å°±ç»ª
+  {
+    timeout++; ////è¶…æ—¶å¤„ç†
+    if (timeout > maxDelay)
+      break;
+  }
 
- 
+  timeout = 0;
+  while (HAL_UART_Receive_IT(handler, (u8 *)(dev->rx_buff), sizeof(dev->rx_buff)) != HAL_OK) // ä¸€æ¬¡å¤„ç†å®Œæˆä¹‹åï¼Œé‡æ–°å¼€å¯ä¸­æ–­å¹¶è®¾ç½®RxXferCountä¸º1
+  {
+    timeout++; // è¶…æ—¶å¤„ç†
+    if (timeout > maxDelay)
+      break;
+  }
+}
 
+void USART1_IRQHandler(void)
+{
+  USART_IRQHandler(&s_uart_devices[0]);
+}
 
+void uart_test(const char* name)
+{
+  int len = 0;
+  int fd = uart_open(name);
+  uint8_t buff[128] = {0};
 
+  if (fd >= 0)
+  {
+    while (1)
+    {
+      len = uart_read(fd, buff, sizeof(buff));
+      if (len > 0)
+      {
+        uart_write(fd, buff, len);
+      }
+    }
 
+    uart_close(fd);
+  }
+}
