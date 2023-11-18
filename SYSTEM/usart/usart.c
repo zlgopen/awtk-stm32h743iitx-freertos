@@ -80,7 +80,7 @@ int uart_open(const char *name, int baudrate)
   {
     return -1;
   }
-  dev->handler.Init.BaudRate = baudrate;               // 波特率
+  dev->handler.Init.BaudRate = baudrate;             // 波特率
   dev->handler.Init.WordLength = UART_WORDLENGTH_8B; // 字长为8位数据格式
   dev->handler.Init.StopBits = UART_STOPBITS_1;      // 一个停止位
   dev->handler.Init.Parity = UART_PARITY_NONE;       // 无奇偶校验位
@@ -97,7 +97,7 @@ int uart_open(const char *name, int baudrate)
 
 int uart_close(int fd)
 {
-	int index = fd - 1;	
+  int index = fd - 1;
   uart_device_t *dev = NULL;
   return_value_if_fail(fd < MAX_UART_COUNT && index >= 0, -1);
   dev = &s_uart_devices[index];
@@ -111,13 +111,24 @@ int uart_close(int fd)
 
 int uart_read(int fd, void *buffer, uint32_t size)
 {
-	int index = fd - 1;	
+  int index = fd - 1;
   uart_device_t *dev = NULL;
   return_value_if_fail(fd < MAX_UART_COUNT && index >= 0, -1);
   dev = &s_uart_devices[index];
   return_value_if_fail(dev->rx_ring_buff != NULL, -1);
 
   return ring_buffer_read(dev->rx_ring_buff, buffer, size);
+}
+
+bool_t uart_has_data(int fd)
+{
+  int index = fd - 1;
+  uart_device_t *dev = NULL;
+  return_value_if_fail(fd < MAX_UART_COUNT && index >= 0, -1);
+  dev = &s_uart_devices[index];
+  return_value_if_fail(dev->rx_ring_buff != NULL, -1);
+
+  return !ring_buffer_is_empty(dev->rx_ring_buff);
 }
 
 static int uart_send_char(uart_device_t *dev, uint8_t ch)
@@ -132,7 +143,7 @@ static int uart_send_char(uart_device_t *dev, uint8_t ch)
 int uart_write(int fd, const void *buffer, uint32_t size)
 {
   uint32_t i = 0;
-	int index = fd - 1;		
+  int index = fd - 1;
   uart_device_t *dev = NULL;
   return_value_if_fail(fd < MAX_UART_COUNT && index >= 0, -1);
   dev = &s_uart_devices[index];
@@ -168,6 +179,24 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 
     HAL_NVIC_EnableIRQ(USART1_IRQn);         // 使能USART1中断通道
     HAL_NVIC_SetPriority(USART1_IRQn, 3, 3); // 抢占优先级3，子优先级3
+  }
+  else if (huart->Instance == USART2) // 如果是串口1，进行串口1 MSP初始化
+  {
+    __HAL_RCC_GPIOA_CLK_ENABLE();  // 使能GPIOA时钟
+    __HAL_RCC_USART2_CLK_ENABLE(); // 使能USART2时钟
+
+    GPIO_Initure.Pin = GPIO_PIN_2;       // PA2
+    GPIO_Initure.Mode = GPIO_MODE_AF_PP; // 复用推挽输出
+    GPIO_Initure.Pull = GPIO_PULLUP;
+    GPIO_Initure.Speed = GPIO_SPEED_FREQ_HIGH; // 高速
+    GPIO_Initure.Alternate = GPIO_AF7_USART2;  // 复用为USART2
+    HAL_GPIO_Init(GPIOA, &GPIO_Initure);       // 初始化PA2
+
+    GPIO_Initure.Pin = GPIO_PIN_3;       // PA3
+    HAL_GPIO_Init(GPIOA, &GPIO_Initure); // 初始化PA3
+
+    HAL_NVIC_EnableIRQ(USART2_IRQn);         // 使能USART2中断通道
+    HAL_NVIC_SetPriority(USART2_IRQn, 3, 3); // 抢占优先级3，子优先级3
   }
 
   /*TODO: init other uarts*/
@@ -226,7 +255,12 @@ void USART1_IRQHandler(void)
   USART_IRQHandler(&s_uart_devices[0]);
 }
 
-void uart_test(const char* name)
+void USART2_IRQHandler(void)
+{
+  USART_IRQHandler(&s_uart_devices[1]);
+}
+
+void uart_test(const char *name)
 {
   int len = 0;
   int fd = uart_open(name, 115200);
@@ -234,13 +268,18 @@ void uart_test(const char* name)
 
   if (fd >= 0)
   {
-		int count = 10000;
+    int count = 10000;
     while (count-- > 0)
     {
       len = uart_read(fd, buff, sizeof(buff));
       if (len > 0)
       {
         uart_write(fd, buff, len);
+      }
+      else
+      {
+        uart_write(fd, "abc\r\n", 5);
+        delay_us(10000);
       }
     }
 

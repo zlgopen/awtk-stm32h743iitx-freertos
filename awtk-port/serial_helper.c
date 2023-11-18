@@ -1,4 +1,4 @@
-﻿#include "usart.h"
+#include "usart.h"
 #include "tkc/mem.h"
 #include "tkc/serial_helper.h"
 
@@ -13,7 +13,7 @@ serial_handle_t serial_open(const char *port)
 
   handle->dev = fd;
 
-	return handle;
+  return handle;
 error:
   uart_close(fd);
 
@@ -52,34 +52,37 @@ ret_t serial_config(serial_handle_t handle, uint32_t baudrate, bytesize_t bytesi
   return RET_OK;
 }
 
-int serial_handle_get_fd(serial_handle_t handle) {
+int serial_handle_get_fd(serial_handle_t handle)
+{
   return_value_if_fail(handle != NULL, -1);
 
   return handle->dev;
 }
 
-
-serial_dev_t serial_handle_get_dev(serial_handle_t handle) {
+serial_dev_t serial_handle_get_dev(serial_handle_t handle)
+{
   return_value_if_fail(handle != NULL, NULL);
 
   return handle->dev;
 }
 
-ret_t serial_iflush(serial_handle_t handle) {
+ret_t serial_iflush(serial_handle_t handle)
+{
   return_value_if_fail(handle != NULL, RET_BAD_PARAMS);
 
   return RET_OK;
 }
 
-ret_t serial_oflush(serial_handle_t handle) {
+ret_t serial_oflush(serial_handle_t handle)
+{
   return_value_if_fail(handle != NULL, RET_BAD_PARAMS);
 
   return RET_OK;
 }
 
-
-ret_t serial_wait_for_data(serial_handle_t handle, uint32_t timeout_ms) {
+ret_t serial_wait_for_data(serial_handle_t handle, uint32_t timeout_ms)
+{
   return_value_if_fail(handle != NULL, RET_BAD_PARAMS);
 
-  return RET_OK;
+  return uart_has_data(handle->dev) ? RET_OK : RET_TIMEOUT;
 }

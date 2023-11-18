@@ -1,4 +1,4 @@
-﻿#ifndef _USART_H
+#ifndef _USART_H
 #define _USART_H
 
 #include "tkc/ring_buffer.h"
@@ -38,6 +38,14 @@ int uart_open(const char *name, int baudrate);
  * @return {int} 实际读取字节数。
 */
 int uart_read(int fd, void *buff, uint32_t nbytes);
+
+/**
+ * @method uart_has_data
+ * 串口是否有数据。
+ * @param {int} fd 串口句柄。
+ * @return {bool_t} TRUE表示有数据，FALSE表示没有数据。
+*/
+bool_t uart_has_data(int fd);
 
 /**
  * @method uart_write
